@@ -8,3 +8,5 @@ For some details and pictures please see vu2spf.blogspot.in
 Please suggest additions and improvements to vu2spf@gmail.com
 
 Released under GPL3.0
+
+v1.05 16/7/17
