@@ -6,8 +6,9 @@
   code for the benefit of HAMS and other electronic enthusiasts. Ideas from many of these may reflect in this work. Heartfelt Thanks to all users and testers for encouragement.
   There are lot of possible additions / upgrades and improvements. Please suggest or correct and publish your changes for the benefit of all HAMS.
 */
-#define Ver "V1.05"     // 7/7/17 based on practical experimentations wih Bitx acive areas in buttons shrunk from all sides by few pixels.
-//#define Ver "V1.04"  //   15th June Tidied up display and added 4 fn buttons on 5th row To be assigned later
+#define Ver "V1.06"     // 16/7/17 Corrected band change, Sideband flip and bfo display problems
+//#define Ver "V1.05"   // 7/7/17 based on practical experimentations wih Bitx acive areas in buttons shrunk from all sides by few pixels.
+//#define Ver "V1.04"   //   15th June Tidied up display and added 4 fn buttons on 5th row To be assigned later
 //#define Ver "V1.03"  // 14th June 2017 Optimization and shorter band table
 //#define Ver "V1.02"  // 9th June 2017 , Optimized prog and minor changes
 //#define Ver "V1.01"  // 2nd June 2017 Tested with 5351 board and Multiband Bitx
@@ -128,7 +129,7 @@ volatile uint32_t F_MIN_T[9] = {100000UL,  3500000UL, 7000000UL, 10100000UL, 140
 volatile uint32_t  F_MAX_T[9] = {75000000UL,  3800000UL, 7200000UL, 10150000UL, 14350000UL, 18168000UL, 21450000UL, 24990000UL, 29700000UL};
 String  B_NAME_T[] = {"  VFO", "  80m", "  40m", "  30m", "  20m", "  17m", "  15m", "  12m", "  10m" };
 volatile uint32_t  VFO_T[9] = {9500000UL, 3670000UL, 7100000UL, 10120000UL, 14200000UL, 18105000UL, 21200000UL, 24925000UL, 28500000UL};
-int band_cntrl[] = {23, 24, 25, 26, 27, 28, 29, 30, 31}; // pins for controlling BPF and LPF corresponding to each band
+int band_cntrl[] = {23, 24, 25, 26, 16, 28, 29, 30, 31}; // pins for controlling BPF and LPF corresponding to each band (20m 16 was 27)
 
 /* all bands
   volatile uint32_t F_MIN_T[13] = {100000UL, 1810000UL, 3500000UL, 7000000UL, 10100000UL, 14000000UL, 18068000UL, 21000000UL, 24890000UL, 28000000UL, 50000000UL, 70000000UL, 5398500UL};
@@ -216,6 +217,12 @@ void setup()
   pinMode(SideBandSelect, INPUT_PULLUP);     //sideband pushbutton setup
   // pinMode(TEST_OP, OUTPUT);  // test purpose only
   // test_op = HIGH;
+
+  for (int i = 0; i <= MAX_BANDS; i++)   // all band control pins init & OFF
+  {
+    pinMode(band_cntrl[i], OUTPUT);
+    digitalWrite(band_cntrl[i], LOW);
+  }
 
   PCICR |= (1 << PCIE2);           // Enable pin change interrupt for the encoder
   //  PCMSK2 |= (1 << PCINT18) | (1 << PCINT19); // uno
@@ -426,6 +433,7 @@ void loop()  {
     {
       if (xpos > 25 && xpos < 65 )       // Left half button decreases band(20,65)
       {
+        old_band = bnd_count;
         bnd_count = bnd_count - 1;
         if (bnd_count < 0)
           bnd_count = 8;
@@ -434,7 +442,9 @@ void loop()  {
       }
 
       else if (xpos > 67 && xpos < 110 )     // Right half button increases band (67,115)
-      { bnd_count = bnd_count + 1;
+      {
+        old_band = bnd_count;
+        bnd_count = bnd_count + 1;
         if (bnd_count > 8)
           bnd_count = 0;
         change_band();
@@ -473,7 +483,9 @@ void loop()  {
           sideband = LSB;
           bfo = bfo_LSB;
         }
+        delay(50);
         display_sideband();
+        display_bfo();
         save_frequency();
         set_vfo();
       }

@@ -40,20 +40,6 @@ void save_frequency()    // for temporarily saving in variables not in EEPROM
   }
 }
 
-void set_band()       // from frequecy determine band and activate corresponding relay
-{
-  old_band = bnd_count;
-  for (int i = MAX_BANDS; i >= 0; i--)
-  {
-    if ((vfo >= F_MIN_T[i]) && (vfo <= F_MAX_T[i]))
-    {
-      bnd_count = i ;
-      break;
-    }
-  }
-  digitalWrite(band_cntrl[old_band], LOW);   // deactivate old band relay
-  digitalWrite(band_cntrl[bnd_count], HIGH); // activate new selected band
-}
 
 void set_bfo()
 {

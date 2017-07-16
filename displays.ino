@@ -2,7 +2,7 @@ void display_mem()
 {
   tft.setCursor(185, 12);
   tft.setTextSize(3);
-  tft.setTextColor(GREEN,GREY);
+  tft.setTextColor(GREEN, GREY);
   if (memCh < 10)
     tft.print("0");
   tft.print(memCh);
@@ -90,6 +90,20 @@ void display_frequency2()
   }
 } // end of display_frequency2()
 
+void set_band()       // from frequecy determine band and activate corresponding relay
+{
+  for (int i = MAX_BANDS; i >= 0; i--)
+  {
+    if ((vfo >= F_MIN_T[i]) && (vfo <= F_MAX_T[i]))
+    {
+      bnd_count = i ;
+      break;
+    }
+  }
+  digitalWrite(band_cntrl[old_band], LOW);   // deactivate old band relay
+  digitalWrite(band_cntrl[bnd_count], HIGH); // activate new selected band
+}
+
 void display_band()
 {
   tft.setCursor(22, 125);
@@ -100,13 +114,14 @@ void display_band()
 }  // end of Display-band()
 
 void change_band() {
-  tft.setCursor(22, 125);
-  tft.setTextSize(2);
-  tft.setTextColor(WHITE, GREY);
+  // tft.setCursor(22, 125);
+  // tft.setTextSize(2);
+  // tft.setTextColor(WHITE, GREY);
   display_band();
   F_MIN = F_MIN_T[bnd_count];
   F_MAX = F_MAX_T[bnd_count];
   vfo = VFO_T[bnd_count];
+  //  set_band();
   changed_f = 1;
 }  // end of change_band()
 
